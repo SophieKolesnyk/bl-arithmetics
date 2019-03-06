@@ -7,3 +7,4 @@ public
 .idea
 out
 bl-arithmetics.iml
+.gitignore
