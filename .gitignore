@@ -1,9 +1,0 @@
-# Logs
-logs
-*.log
-
-# Ignore build files
-public
-.idea
-out
-bl-arithmetics.iml
