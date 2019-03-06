@@ -8,7 +8,7 @@ public class BLDigit {
     public int sign;
     public int Q;
     public List<Integer> N;
-    public static int precision;
+    public static int precision = 20;
 
     BLDigit(){}                 //Default constructor
 
@@ -85,7 +85,7 @@ public class BLDigit {
 
 
 
-    private static boolean hesRepeat(List<Integer> i_list)
+    private static boolean hasRepeat(List<Integer> i_list)
     {
         Collections.sort(i_list, Collections.reverseOrder());
         for (int i = 0, j = 1; j < i_list.size()-1; ++i, ++j) {
@@ -100,17 +100,20 @@ public class BLDigit {
 
         List<Integer> result = new ArrayList();
 
-        for (int j = 1; j < i_list.size()-1;) {
-            int i = j-1;
-            if (i_list.get(i).equals(i_list.get(j))){
+        int i = i_list.size()-1;
+        for (; i>0; ) {
+
+            if (i_list.get(i).equals(i_list.get(i-1))){
                 result.add(i_list.get(i) + 1);
-                ++j;
+                i-=2;
             }
             else {
-                result.add(i_list.get(i));
-                result.add(i_list.get(j));
-                j+=2;
+                result.add(i_list.get(i--));
             }
+        }
+
+        if(i==0) {
+            result.add(i_list.get(i));
         }
 
         return result;
@@ -149,7 +152,29 @@ public class BLDigit {
 
         while (j2<bl2.N.size()) result.add(bl2.N.get(j2++));
 
-        if (hesRepeat(result)) removeRepeat(result);
+        if (hasRepeat(result)) removeRepeat(result);
+
+        return new BLDigit(bl1.sign, result.size(), result);
+    }
+
+    public static BLDigit mult(BLDigit bl1, BLDigit bl2) {
+        List<Integer> result = new ArrayList();
+
+        List<Integer> term_1 = bl1.N;
+        List<Integer> term_2 = bl2.N;
+
+
+        for (int i = 0; i < term_1.size(); ++i) {
+            for (int j = 0; j < term_2.size(); ++j){
+                Integer sum_ij = term_1.get(i) + term_2.get(j);
+                result.add(sum_ij);
+            }
+        }
+
+        while (hasRepeat(result))
+            result = new ArrayList(removeRepeat(result));
+
+        int diff_sign = bl1.sign*bl2.sign;
 
         return new BLDigit(bl1.sign, result.size(), result);
     }
