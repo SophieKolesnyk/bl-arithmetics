@@ -12,10 +12,13 @@ public class Convertor {
 
 
     public static List<Integer> intPartList(BigInteger int_part) {
+        List<Integer> result = new ArrayList();
+        if(int_part.toString()=="0") return result;
+
+
         String bin_str = int_part.toString(2);
         char[] bin_char = bin_str.toCharArray();
 
-        List<Integer> result = new ArrayList();
         for(int i = 0; i<bin_str.length(); ++i) {
             if(bin_char[i] == '1')
                 result.add(bin_str.length()-i-1);
@@ -24,9 +27,11 @@ public class Convertor {
     }
 
     private static List<Integer> fractPartList(BigDecimal fraction_part) {
+        List<Integer> result = new ArrayList();
+        if(fraction_part.toString()=="0.0") return result;
+
         MathContext context = context = new MathContext(BLDigit.precision);
 
-        List<Integer> result = new ArrayList();
 
         BigDecimal zero = new BigDecimal("0.0");
 
@@ -50,12 +55,14 @@ public class Convertor {
 
     static List<Integer> DecimalToIndexesList(BigDecimal u_digit)
     {
+
         List<Integer> result = new ArrayList();
 
         if(u_digit.toString().contains(".")){
             String[] partition = u_digit.toString().split("\\.");
-            result.addAll(intPartList(new BigInteger(partition[0])));
-            result.addAll(fractPartList(new BigDecimal("0." + partition[1])));
+                result.addAll(intPartList(new BigInteger(partition[0])));
+               // BLDigit.aft_p= partition[1].length();
+                result.addAll(fractPartList(new BigDecimal("0." + partition[1])));
         }
         else
             result.addAll(intPartList(u_digit.toBigInteger()));
@@ -65,9 +72,11 @@ public class Convertor {
 
 
     public static BLDigit decimalToRl(BigDecimal i_digit) {
+        if (i_digit.compareTo(new BigDecimal("0.0"))==0) return BLDigit.ZERO;
+
         BLDigit result = new BLDigit();
-        result.sign = (i_digit.compareTo(BigDecimal.ZERO) < 0)?1:0;
-        result.N = DecimalToIndexesList(i_digit);
+        result.sign = (i_digit.toString().substring(0,1)=="-")?1:0;
+        result.N = DecimalToIndexesList(i_digit.abs());
         result.Q = result.N.size();
         return result;
     }
@@ -80,15 +89,20 @@ public class Convertor {
     }
 
     public static BigDecimal toDecimal(BLDigit i_bl) {
-
+        Collections.sort(i_bl.N, Collections.reverseOrder());
         BigDecimal result = new BigDecimal("0.0");
         BigDecimal base = new BigDecimal("2.0");
-
-        for (int i = 0; i < i_bl.Q; ++i)
+        int i = 0;
+        for (; i < i_bl.Q; ){
             result = result.add(BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(BLDigit.precision)));
+            ++i;
+        }
+
 
         return result;
     }
+
+
 
 }
 

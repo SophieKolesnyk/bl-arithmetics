@@ -8,9 +8,13 @@ public class BLDigit {
     public int sign;
     public int Q;
     public List<Integer> N;
-    public static int precision = 20;
+    public static int precision = 35;
+ //   public static int aft_p;
 
-    BLDigit(){}                 //Default constructor
+    BLDigit(){
+        this.sign =0;
+        this.Q = 0;
+    }                 //Default constructor
 
     BLDigit(BLDigit i_bl) {     //Copy constructorytr
         this.sign = i_bl.sign;
@@ -32,7 +36,7 @@ public class BLDigit {
         this.N = temp.N;
     }
 
-    static final BLDigit ZERO = new BLDigit(0, 0, Collections.emptyList());
+    public static final BLDigit ZERO = new BLDigit(0, 0, Collections.emptyList());
 
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -83,7 +87,14 @@ public class BLDigit {
         return result;
     }
 
+    public String listToString() {
+        StringBuilder result = new StringBuilder();
 
+        for (int i = 0; i<this.Q; ++i)
+            result.append(this.N.get(i)+".");
+
+        return result.toString();
+    }
 
     private static boolean hasRepeat(List<Integer> i_list)
     {
@@ -121,44 +132,63 @@ public class BLDigit {
 
     public static BLDigit add(BLDigit bl1, BLDigit bl2) {
 
-        List<Integer> result = new ArrayList();
+        //System.out.println("add("+bl1.toString()+ ", " + bl2+")");
+        BLDigit result = new BLDigit();
+        List<Integer> result_list = new ArrayList();
 
-        int i1 = 0, j2 = 0;
-        int comparison;
-        Integer res_i = new Integer(0);
+        int bl1_to_zero = BLDigit.compare(bl1, BLDigit.ZERO);
+        int bl2_to_zero = BLDigit.compare(bl2, BLDigit.ZERO);
+        //System.out.println("bl1_to_zero = "+bl1_to_zero+", bl2_to_zero = " + bl2_to_zero);
 
-
-        for(; i1<bl1.N.size()&&j2<bl2.N.size() ; )
+        if ((bl1_to_zero==0)||(bl2_to_zero==0))
+            if ((bl1_to_zero == 0) ^ (bl2_to_zero == 0)) {
+                if ((bl1_to_zero == 0)) result = bl2;
+                else result = bl1;
+            }
+            else result = BLDigit.ZERO;
+        else
         {
-            comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
+            int i1 = 0, j2 = 0;
+            int comparison;
+            Integer res_i = 0;
 
-            if (comparison!=0)
+            for(; i1<bl1.N.size()&&j2<bl2.N.size() ; )
             {
-                if (comparison<0)
-                    res_i = bl1.N.get(i1++);
+                comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
+
+                if (comparison!=0)
+                {
+                    if (comparison>0)
+                        res_i = bl1.N.get(i1++);
+                    else
+                        res_i = bl2.N.get(j2++);
+                }
                 else
-                    res_i = bl2.N.get(j2++);
+                {
+                    res_i = bl1.N.get(i1) + 1;
+                    ++i1;
+                    ++j2;
+                }
+                result_list.add(res_i);
             }
-            else
-            {
-                res_i = bl1.N.get(i1) + 1;
-                ++i1;
-                ++j2;
-            }
-            result.add(res_i);
+            //System.out.println("List before removing replace:\n"+result_list.toString());
+
+            while (i1<bl1.N.size()) result_list.add(bl1.N.get(i1++));
+            while (j2<bl2.N.size()) result_list.add(bl2.N.get(j2++));
+
+            while (hasRepeat(result_list)) result_list = removeRepeat(result_list);
+            result = new BLDigit(bl1.sign, result_list.size(), result_list);
         }
-
-        while (i1<bl1.N.size()) result.add(bl1.N.get(i1++));
-
-        while (j2<bl2.N.size()) result.add(bl2.N.get(j2++));
-
-        if (hasRepeat(result)) removeRepeat(result);
-
-        return new BLDigit(bl1.sign, result.size(), result);
+        //System.out.println("Sum = "+result.toString());
+        return result;
     }
 
     public static BLDigit mult(BLDigit bl1, BLDigit bl2) {
+
+
         List<Integer> result = new ArrayList();
+
+        if((compare(bl1, BLDigit.ZERO)==0)||(compare(bl2, BLDigit.ZERO)==0)) return BLDigit.ZERO;
 
         List<Integer> term_1 = bl1.N;
         List<Integer> term_2 = bl2.N;
@@ -174,9 +204,10 @@ public class BLDigit {
         while (hasRepeat(result))
             result = new ArrayList(removeRepeat(result));
 
+
         int diff_sign = bl1.sign*bl2.sign;
 
-        return new BLDigit(bl1.sign, result.size(), result);
+        return new BLDigit(diff_sign, result.size(), result);
     }
 
 }
