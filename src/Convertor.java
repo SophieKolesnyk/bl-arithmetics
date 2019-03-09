@@ -1,91 +1,99 @@
+import ch.obermuhlner.math.big.BigDecimalMath;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
-import ch.obermuhlner.math.big.BigDecimalMath;
 import java.util.List;
-
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Convertor {
 
 
-    public static List<Integer> intPartList(BigInteger int_part) {
+
+
+    public static BigDecimal cutZeros(BigDecimal i_dec) {
+        String str_dec = "";
+        Pattern pattern = Pattern.compile("^([0-9]+[\\.]([0-9]*[1-9]{1}|[^0-9]*))[0]+$");
+        Matcher matcher = pattern.matcher(i_dec.toString());
+        if (matcher.find())
+
+            str_dec = matcher.group(1);
+        else
+            str_dec = i_dec.toString();
+
+        return  new BigDecimal(str_dec);
+    }
+
+    public static BLDigit fromDecimal(BigDecimal i_digit) {
+        if (i_digit.compareTo(new BigDecimal("0.0")) == 0) return BLDigit.ZERO;
+        BLDigit result = new BLDigit();
+
+        List<Integer> N = new ArrayList();
+        String str_digit = i_digit.toString();
+        if(str_digit.contains(".")){
+            String[] partition = str_digit.split("\\.");
+            N.addAll(intPartList(partition[0]));
+            result.precision *= partition[1].length();
+            N.addAll(fractPartList( partition[1], result.precision));
+        }
+        else
+            N.addAll(intPartList(str_digit));
+
+        result.sign = (i_digit.toString().substring(0,1)=="-")?1:0;
+        result.Q = N.size();
+        result.N = N;
+
+        return result;
+    }
+
+
+
+    public static List<Integer> intPartList(String int_part) {
         List<Integer> result = new ArrayList();
-        if(int_part.toString()=="0") return result;
+        if(int_part=="0") return result;
 
-
-        String bin_str = int_part.toString(2);
+        String bin_str = new BigInteger(int_part).toString(2);
         char[] bin_char = bin_str.toCharArray();
-
         for(int i = 0; i<bin_str.length(); ++i) {
             if(bin_char[i] == '1')
                 result.add(bin_str.length()-i-1);
         }
+
+
         return  result;
     }
 
-    private static List<Integer> fractPartList(BigDecimal fraction_part) {
+    private static List<Integer> fractPartList(String fraction_part, int precision) {
         List<Integer> result = new ArrayList();
+
+        if(fraction_part=="0.0") return result;
+        MathContext context = new MathContext(precision);
+        BigDecimal dec_fract = new BigDecimal("0."+ fraction_part);
+
         if(fraction_part.toString()=="0.0") return result;
 
-        MathContext context = context = new MathContext(BLDigit.precision);
-
-
-        BigDecimal zero = new BigDecimal("0.0");
-
         int bit_position = 0;
-        BigDecimal next_val = fraction_part;
+        BigDecimal next_val = dec_fract;
+        BigDecimal zero = new BigDecimal("0.0");
+        BigDecimal base = new BigDecimal("2.0");
 
-        while ((Math.abs(bit_position) != BLDigit.precision)) {
+        while ((Math.abs(bit_position) != precision)) {
             if(next_val.compareTo(zero)==0)
                 break;
 
-            int bit = fraction_part.intValue();
+            int bit = dec_fract.intValue();
+
             if (bit == 1)
                 result.add(bit_position);
-            next_val = fraction_part.subtract(new BigDecimal(bit), context).multiply(new BigDecimal("2"));
-            fraction_part = next_val;
+            next_val = dec_fract.subtract(new BigDecimal(bit), context).multiply(base);
+            dec_fract = next_val;
             --bit_position;
         }
         return result;
-    }
-
-
-    static List<Integer> DecimalToIndexesList(BigDecimal u_digit)
-    {
-
-        List<Integer> result = new ArrayList();
-
-        if(u_digit.toString().contains(".")){
-            String[] partition = u_digit.toString().split("\\.");
-                result.addAll(intPartList(new BigInteger(partition[0])));
-               // BLDigit.aft_p= partition[1].length();
-                result.addAll(fractPartList(new BigDecimal("0." + partition[1])));
-        }
-        else
-            result.addAll(intPartList(u_digit.toBigInteger()));
-
-        return result;
-    }
-
-
-    public static BLDigit decimalToRl(BigDecimal i_digit) {
-        if (i_digit.compareTo(new BigDecimal("0.0"))==0) return BLDigit.ZERO;
-
-        BLDigit result = new BLDigit();
-        result.sign = (i_digit.toString().substring(0,1)=="-")?1:0;
-        result.N = DecimalToIndexesList(i_digit.abs());
-        result.Q = result.N.size();
-        return result;
-    }
-
-    public static BLDigit integerToRl(Integer i_digit) {
-        List<Integer> result = intPartList(BigInteger.valueOf(i_digit));
-        Collections.sort(result, Collections.reverseOrder());
-        BLDigit result_bl = new BLDigit((i_digit > 0) ? 0 : 1, result.size(), result);
-        return result_bl;
     }
 
     public static BigDecimal toDecimal(BLDigit i_bl) {
@@ -94,15 +102,11 @@ public class Convertor {
         BigDecimal base = new BigDecimal("2.0");
         int i = 0;
         for (; i < i_bl.Q; ){
-            result = result.add(BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(BLDigit.precision)));
+            result = result.add(BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(i_bl.precision)));
             ++i;
         }
-
-
-        return result;
+        result = result.setScale(i_bl.precision/20, RoundingMode.HALF_UP);
+        return cutZeros(result);
     }
 
-
-
 }
-
