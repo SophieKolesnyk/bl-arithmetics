@@ -39,58 +39,130 @@ public class BLDigit {
     public static final BLDigit ZERO = new BLDigit(0, 0, Collections.emptyList());
 
     public static BLDigit add(BLDigit bl1, BLDigit bl2) {
-        int res_prec =(bl1.precision > bl2.precision)? bl1.precision : bl2.precision;
-        BLDigit result = new BLDigit(res_prec);
-        List<Integer> result_list = new ArrayList();
-
-        int bl1_to_zero = BLDigit.compare(bl1, BLDigit.ZERO);
-        int bl2_to_zero = BLDigit.compare(bl2, BLDigit.ZERO);
-
-        if ((bl1_to_zero==0)||(bl2_to_zero==0))
-            if ((bl1_to_zero == 0) ^ (bl2_to_zero == 0)) {
-                if ((bl1_to_zero == 0)) result = bl2;
-                else result = bl1;
-            }
-            else result = BLDigit.ZERO;
-        else
-        {
-            int i1 = 0, j2 = 0;
-            int comparison;
-            Integer res_i = 0;
-
-            for(; i1<bl1.N.size()&&j2<bl2.N.size() ; )
-            {
-                comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
-
-                if (comparison!=0)
-                {
-                    if (comparison>0)
-                        res_i = bl1.N.get(i1++);
-                    else
-                        res_i = bl2.N.get(j2++);
-                }
-                else
-                {
-                    res_i = bl1.N.get(i1) + 1;
-                    ++i1;
-                    ++j2;
-                }
-
-                result_list.add(res_i);
-
-            }
-
-            while (i1<bl1.N.size()) result_list.add(bl1.N.get(i1++));
-            while (j2<bl2.N.size()) result_list.add(bl2.N.get(j2++));
-
-            while (hasRepeat(result_list)) result_list = removeRepeat(result_list);
-            result.sign = bl1.sign;
-            result.Q = result_list.size();
-            result.N = result_list;
-
-
+        BLDigit result = new BLDigit();
+        if (bl1.sign != bl2.sign) {
+            result =  BLDigit.sub(bl1, bl2);
         }
+        else {
+            int res_prec =(bl1.precision > bl2.precision)? bl1.precision : bl2.precision;
+            result = new BLDigit(res_prec);
+            List<Integer> result_list = new ArrayList();
 
+            int bl1_to_zero = BLDigit.compare(bl1, BLDigit.ZERO);
+            int bl2_to_zero = BLDigit.compare(bl2, BLDigit.ZERO);
+
+            if ((bl1_to_zero==0)||(bl2_to_zero==0))
+                if ((bl1_to_zero == 0) ^ (bl2_to_zero == 0)) {
+                    if ((bl1_to_zero == 0)) result = bl2;
+                    else result = bl1;
+                }
+                else result = BLDigit.ZERO;
+            else
+            {
+                int i1 = 0, j2 = 0;
+                int comparison;
+                Integer res_i = 0;
+
+                for(; i1<bl1.N.size()&&j2<bl2.N.size() ; )
+                {
+                    comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
+
+                    if (comparison!=0)
+                    {
+                        if (comparison>0)
+                            res_i = bl1.N.get(i1++);
+                        else
+                            res_i = bl2.N.get(j2++);
+                    }
+                    else
+                    {
+                        res_i = bl1.N.get(i1) + 1;
+                        ++i1;
+                        ++j2;
+                    }
+
+                    result_list.add(res_i);
+
+                }
+
+                while (i1<bl1.N.size()) result_list.add(bl1.N.get(i1++));
+                while (j2<bl2.N.size()) result_list.add(bl2.N.get(j2++));
+
+                while (hasRepeat(result_list)) result_list = removeRepeat(result_list);
+                result.sign = bl1.sign;
+                result.Q = result_list.size();
+                result.N = result_list;
+            }
+        }
+        return result;
+    }
+
+    static BLDigit sub(BLDigit term_1, BLDigit term_2) {
+        BLDigit result = new BLDigit();
+        int compare_res = BLDigit.compare(term_1, term_2);
+        int sign_resolve = signResolving(term_1.sign, term_2.sign, 1, compare_res);
+        if(sign_resolve==0) {
+                result = add(term_1, term_2);
+        }
+        else {
+            if(compare_res==0)
+                return new BLDigit(term_1.sign, 0, Collections.emptyList());
+
+            List<Integer> decreasing = new ArrayList();
+            List<Integer> deduction = new ArrayList();
+            int res_sign = 0;
+            if(sign_resolve == 1) {
+                res_sign =term_1.sign;
+                decreasing.addAll(term_1.N);
+                deduction.addAll(term_2.N);
+            }
+            else {
+                res_sign = term_2.sign;
+                decreasing.addAll(term_2.N);
+                deduction.addAll(term_1.N);
+            }
+            Collections.sort(decreasing, Collections.reverseOrder());
+            Collections.sort(deduction, Collections.reverseOrder());
+            System.out.println(decreasing.toString());
+            System.out.println(deduction.toString());
+
+            List<Integer> N = new ArrayList();
+
+
+            int j = deduction.size()-1;
+            while ((j>=0)&&(!decreasing.isEmpty())){
+                int i = decreasing.size()-1;
+                System.out.println(N.toString());
+                System.out.println(decreasing.get(i)+"\t"+deduction.get(j));
+                    if (decreasing.get(i)!=deduction.get(j))
+                    {
+                        if (decreasing.get(i)<deduction.get(j)) {
+                            N.add(decreasing.get(i));
+
+                            ++j;
+                        }
+                        else {
+                            int Ni = decreasing.get(i);
+                            int Nj = deduction.get(j);
+                            while (Nj<Ni)
+                                N.add(Nj++);
+                        }
+                    }
+                    --j;
+                decreasing.remove(i);
+            }
+
+            if (!decreasing.isEmpty())
+                N.addAll(decreasing);
+
+            Collections.sort(N, Collections.reverseOrder());
+
+            while (hasRepeat(N))
+                N = new ArrayList(removeRepeat(N));
+
+            Collections.sort(N, Collections.reverseOrder());
+            result = new BLDigit(res_sign, N.size(), N);
+        }
         return result;
     }
 
@@ -117,7 +189,6 @@ public class BLDigit {
         return result;
     }
 
-
     public static BLDigit square(BLDigit bl1) {
         BLDigit result = BLDigit.ZERO;
         int singles_numb = bl1.submatrixNumber(1);
@@ -127,6 +198,20 @@ public class BLDigit {
 
         if (doubles_numb >0)
             result = BLDigit.add(result, bl1.doubleSubSum(doubles_numb));
+        return result;
+    }
+
+    public static BLDigit sqrt(BLDigit bl1){
+        BLDigit result = BLDigit.ZERO;
+        return result;
+    }
+
+    static int signResolving(int first_sign, int second_sign, int operation, int compare) {
+        int result = 0;
+        second_sign = second_sign-operation;
+        if (first_sign!=second_sign) {
+            result = (compare==1)?1:-1;
+        }
         return result;
     }
 
@@ -316,5 +401,81 @@ class Pair {
         }
         return false;
     }
+/*
+static BLDigit sub(BLDigit term_1, BLDigit term_2) {
+        BLDigit result = new BLDigit();
+        int compare_res = BLDigit.compare(term_1, term_2);
+        int sign_resolve = signResolving(term_1.sign, term_2.sign, 1, compare_res);
+        if(sign_resolve==0) {
+                result = add(term_1, term_2);
+        }
+        else {
+            if(compare_res==0)
+                return new BLDigit(term_1.sign, 0, Collections.emptyList());
 
+            List<Integer> decreasing = new ArrayList();
+            List<Integer> deduction = new ArrayList();
+            int res_sign = 0;
+            if(sign_resolve == 1) {
+                res_sign =term_1.sign;
+                decreasing.addAll(term_1.N);
+                deduction.addAll(term_2.N);
+            }
+            else {
+                res_sign = term_2.sign;
+                decreasing.addAll(term_2.N);
+                deduction.addAll(term_1.N);
+            }
+            Collections.sort(decreasing, Collections.reverseOrder());
+            Collections.sort(deduction, Collections.reverseOrder());
+            System.out.println(decreasing.toString());
+            System.out.println(deduction.toString());
+
+            List<Integer> N = new ArrayList();
+            int i, j;
+            for (; !deduction.isEmpty(); ) {
+                i = decreasing.size() - 1;
+                j = deduction.size() - 1;
+                for (; i >= 0; ) {
+                    if ( decreasing.get(i).intValue() >= deduction.get(j).intValue())
+                        break;
+                    else
+                        --i;
+                }
+
+                if(i < 0) i++;
+                if(decreasing.isEmpty()) break;
+                int rate1_element = decreasing.get(i).intValue();
+                int rate2_element = deduction.get(j).intValue();
+
+                decreasing.remove(i);
+                deduction.remove(j);
+                if (rate1_element == rate2_element)
+                    continue;
+                System.out.println(rate1_element+" - "+rate2_element);
+
+                while (rate2_element < rate1_element){
+                    System.out.println(rate2_element);
+                    N.add(rate2_element++);
+                }
+            }
+            if (!decreasing.isEmpty())
+                N.addAll(decreasing);
+
+            if (!deduction.isEmpty())
+                N.addAll(deduction);
+
+            Collections.sort(N, Collections.reverseOrder());
+            System.out.println(N.toString());
+
+            while (hasRepeat(N))
+                N = new ArrayList(removeRepeat(N));
+
+            Collections.sort(N, Collections.reverseOrder());
+            System.out.println("return\n"+N.toString());
+            result = new BLDigit(res_sign, N.size(), N);
+        }
+        return result;
+    }
+ */
 }

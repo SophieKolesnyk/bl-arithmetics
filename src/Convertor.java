@@ -110,9 +110,13 @@ public class Convertor {
         Collections.sort(i_bl.N, Collections.reverseOrder());
         BigDecimal result = new BigDecimal("0.0");
         BigDecimal base = new BigDecimal("2.0");
-        int i = 0;
-        for (; i < i_bl.Q; ){
-            result = result.add(BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(i_bl.precision)));
+
+
+        for (int i = 0; i < i_bl.Q; ){
+            BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(i_bl.precision));
+            System.out.println(pow);
+            result = result.add(pow);
+
             ++i;
         }
         result = result.setScale(i_bl.precision/20, RoundingMode.HALF_UP);
