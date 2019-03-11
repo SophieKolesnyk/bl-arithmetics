@@ -150,12 +150,12 @@ public class BLDigit {
 
     public BLDigit calculateDoubleSub(Pair matrix) {
         BLDigit result = Convertor.fromString("2");
-        int multiplier = this.N.get(matrix.first) + this.N.get(matrix.second);
-        System.out.println(multiplier);
-        for
-        for (Integer bit:result.N)
-            bit += (multiplier+1);
-        System.out.println(result.toString());
+        int additor = this.N.get(matrix.first) + this.N.get(matrix.second);
+        System.out.println(additor);
+        for (int i = 0; i < result.Q; i++) {
+            result.N.set(i,(additor+result.N.get(i)));
+        }
+
         return result;
     }
 
