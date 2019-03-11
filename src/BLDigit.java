@@ -118,24 +118,35 @@ public class BLDigit {
     }
 
 
+    public static BLDigit square(BLDigit bl1) {
+        BLDigit result = BLDigit.ZERO;
+        int singles_numb = bl1.submatrixNumber(1);
+        int doubles_numb = bl1.submatrixNumber(2);
+        if (singles_numb>0)
+            result = bl1.singlesSum(singles_numb);
+
+        if (doubles_numb >0)
+            result = BLDigit.add(result, bl1.doubleSubSum(doubles_numb));
+        return result;
+    }
 
     public List<Pair> selectPairs(int H) {
         List<Pair> result = new ArrayList();
         int h = 0;
-            for (int i = 0; i < this.Q; ++i)
-                for (int j = i + 1; j < this.Q; ++j)
+        for (int i = 0; i < this.Q; ++i)
+            for (int j = i + 1; j < this.Q; ++j)
+            {
+                if (result.size()==H) break;
+                if (i != j)
                 {
-                    if (result.size()==H) break;
-                    if (i != j)
-                    {
-                        Pair rows = new Pair(i,j);
-                        if (!Pair.isContainEqual(result, rows)) {
-                            result.add(rows);
-                            System.out.println(rows.first + ", "+ rows.second);
-                            ++h;
-                        }
+                    Pair rows = new Pair(this.N.get(i),this.N.get(j));
+                    if (!Pair.isContainEqual(result, rows)) {
+                        result.add(rows);
+                        System.out.println(rows.first + ", "+ rows.second);
+                        ++h;
                     }
                 }
+            }
 
         return result;
     }
@@ -150,7 +161,7 @@ public class BLDigit {
 
     public BLDigit calculateDoubleSub(Pair matrix) {
         BLDigit result = Convertor.fromString("2");
-        int additor = this.N.get(matrix.first) + this.N.get(matrix.second);
+        int additor = matrix.first + matrix.second;
         System.out.println(additor);
         for (int i = 0; i < result.Q; i++) {
             result.N.set(i,(additor+result.N.get(i)));
@@ -177,28 +188,6 @@ public class BLDigit {
         return H.intValue();
     }
 
-    public static BLDigit square(BLDigit bl1) {
-        BLDigit result = BLDigit.ZERO;
-        int singles_numb = bl1.submatrixNumber(1);
-        int doubles_numb = bl1.submatrixNumber(2);
-        if (singles_numb>0)
-            result = bl1.singlesSum(singles_numb);
-
-        if (doubles_numb >0)
-            result = BLDigit.add(result, bl1.doubleSubSum(doubles_numb));
-        return result;
-    }
-
-
-/*
-    public static BLDigit sqrt(BLDigit under_root) {
-
-    }
-
-    public static PrivateKeys getPrivateKeys(BLDigit publik_key) {
-        BLDigit P1 = sqrt(publik_key);
-    }
-*/
     public static int compare(BLDigit term_1, BLDigit term_2) {
         int result = 0;
 
