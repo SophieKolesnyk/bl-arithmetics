@@ -1,6 +1,10 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
 
@@ -9,10 +13,11 @@ public class Main {
 
         System.out.println("Введите очень большое число:");
         String input = reader.readLine();
-        BLDigit bl1 = BigInput.strToBL(input);
-        bl1.show();
+        BLDigit X = Convertor.fromDecimal(new BigDecimal(input));
+        BLDigit sq = BLDigit.square(X);
 
-        System.out.println(Convertor.toDecimal(bl1));
+        sq.show();
+        System.out.println(Convertor.toDecimal(sq));
     }
 }
 

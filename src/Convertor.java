@@ -50,7 +50,17 @@ public class Convertor {
         return result;
     }
 
-
+    public static BLDigit fromString(String i_digit){
+        BLDigit bl= new BLDigit();
+        if (i_digit.length()<10)
+        {
+            BigDecimal decimal = new BigDecimal(i_digit);
+            bl = fromDecimal(decimal);
+        }
+        else
+            bl = BigInput.HugeDecToBL(i_digit);
+        return bl;
+    }
 
     public static List<Integer> intPartList(String int_part) {
         List<Integer> result = new ArrayList();

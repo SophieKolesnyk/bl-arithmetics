@@ -107,7 +107,7 @@ public class BigInput {
     }
 
 
-    public static BLDigit strToBL(String i_str) {
+    public static BLDigit HugeDecToBL(String i_str) {
         BLDigit result = BLDigit.ZERO;
 
         Pattern pattern = Pattern.compile("^(-?([0]{1}|[1-9]{1}[0-9]*)){1}(\\.([0-9]+))?$");
