@@ -114,7 +114,6 @@ public class Convertor {
 
         for (int i = 0; i < i_bl.Q; ){
             BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(i_bl.precision));
-            System.out.println(pow);
             result = result.add(pow);
 
             ++i;

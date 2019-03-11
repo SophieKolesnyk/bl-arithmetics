@@ -123,8 +123,6 @@ public class BLDigit {
             }
             Collections.sort(decreasing, Collections.reverseOrder());
             Collections.sort(deduction, Collections.reverseOrder());
-            System.out.println(decreasing.toString());
-            System.out.println(deduction.toString());
 
             List<Integer> N = new ArrayList();
 
@@ -132,10 +130,9 @@ public class BLDigit {
             int j = deduction.size()-1;
             while ((j>=0)&&(!decreasing.isEmpty())){
                 int i = decreasing.size()-1;
-                System.out.println(N.toString());
-                System.out.println(decreasing.get(i)+"\t"+deduction.get(j));
                     if (decreasing.get(i)!=deduction.get(j))
                     {
+
                         if (decreasing.get(i)<deduction.get(j)) {
                             N.add(decreasing.get(i));
 
@@ -148,10 +145,10 @@ public class BLDigit {
                                 N.add(Nj++);
                         }
                     }
+
                     --j;
                 decreasing.remove(i);
             }
-
             if (!decreasing.isEmpty())
                 N.addAll(decreasing);
 
@@ -160,9 +157,9 @@ public class BLDigit {
             while (hasRepeat(N))
                 N = new ArrayList(removeRepeat(N));
 
-            Collections.sort(N, Collections.reverseOrder());
             result = new BLDigit(res_sign, N.size(), N);
         }
+
         return result;
     }
 
@@ -189,37 +186,65 @@ public class BLDigit {
         return result;
     }
 
+
+    public static BLDigit sqrt(BLDigit bl){
+        BLDigit result = BLDigit.ZERO;
+        if(bl.sign==0) {
+            List<Integer> y = new ArrayList();
+            System.out.println(bl.N.toString());
+            int Ni = 0;
+            BLDigit sq_deduction = new BLDigit();
+            BLDigit before_sq = BLDigit.ZERO;
+            BLDigit Oi = bl;
+
+            while (!Oi.N.isEmpty()) {
+                Ni = Oi.N.get(0);
+                Integer yi = (!y.isEmpty())?(Oi.N.get(0)-1-y.get(y.size()-1)):Ni/2;
+                y.add(0, yi);
+                System.out.println("Ni\t"+Ni+"\nyi = " + yi);
+                System.out.println("y = "+y.toString());
+                sq_deduction = sub(square(new BLDigit(0, y.size(),y)), before_sq);
+                System.out.print("Oi = "+Oi.N.toString()+" - "+sq_deduction.N.toString()+" = ");
+                if (compare(BLDigit.sub(Oi,sq_deduction), BLDigit.ZERO)<0) {
+                    y.set(y.size()-1, y.get(y.size()-1)-1);
+                }
+                else {
+                    Oi = BLDigit.sub(Oi,sq_deduction);
+                }
+                System.out.println(Oi.N.toString());
+
+
+
+                before_sq = BLDigit.add(before_sq, sq_deduction);
+            }
+            Collections.sort(y, Collections.reverseOrder());
+
+            result = new BLDigit(0, y.size(), y);
+        }
+
+        return result;
+    }
+
     public static BLDigit square(BLDigit bl1) {
         BLDigit result = BLDigit.ZERO;
+        System.out.println(bl1.toString()+"^2");
         int singles_numb = bl1.submatrixNumber(1);
-        int doubles_numb = bl1.submatrixNumber(2);
         if (singles_numb>0)
             result = bl1.singlesSum(singles_numb);
-
-        if (doubles_numb >0)
+        if (bl1.Q >= 2) {
+            int doubles_numb = bl1.submatrixNumber(2);
             result = BLDigit.add(result, bl1.doubleSubSum(doubles_numb));
-        return result;
-    }
-
-    public static BLDigit sqrt(BLDigit bl1){
-        BLDigit result = BLDigit.ZERO;
-        return result;
-    }
-
-    static int signResolving(int first_sign, int second_sign, int operation, int compare) {
-        int result = 0;
-        second_sign = second_sign-operation;
-        if (first_sign!=second_sign) {
-            result = (compare==1)?1:-1;
         }
         return result;
     }
 
     public List<Pair> selectPairs(int H) {
         List<Pair> result = new ArrayList();
+        System.out.println(this.N.toString());
         int h = 0;
-        for (int i = 0; i < this.Q; ++i)
-            for (int j = i + 1; j < this.Q; ++j)
+        for (int i = 0; i < this.Q-1; ++i)
+        {
+            for (int j = i+1; j < this.Q; ++j)
             {
                 if (result.size()==H) break;
                 if (i != j)
@@ -227,32 +252,22 @@ public class BLDigit {
                     Pair rows = new Pair(this.N.get(i),this.N.get(j));
                     if (!Pair.isContainEqual(result, rows)) {
                         result.add(rows);
-                        System.out.println(rows.first + ", "+ rows.second);
                         ++h;
                     }
                 }
             }
 
-        return result;
-    }
-
-    public BLDigit singlesSum(int H) {
-        List<Integer> N = new ArrayList();
-        for (int i = 0; i < H; ++i) {
-            N.add(this.N.get(i)*2);
-        }
-        return new BLDigit(this.sign, N.size(), N);
-    }
-
-    public BLDigit calculateDoubleSub(Pair matrix) {
-        BLDigit result = Convertor.fromString("2");
-        int additor = matrix.first + matrix.second;
-        System.out.println(additor);
-        for (int i = 0; i < result.Q; i++) {
-            result.N.set(i,(additor+result.N.get(i)));
         }
 
         return result;
+    }
+
+    public int submatrixNumber(int k) {
+        BigDecimal Q_fact = BigDecimalMath.factorial(this.Q);
+        int difference = this.Q - k;
+        BigDecimal deductor = BigDecimalMath.factorial(k).multiply(BigDecimalMath.factorial(difference));
+        BigDecimal H = Q_fact.divide(deductor);
+        return H.intValue();
     }
 
     public BLDigit doubleSubSum(int H) {
@@ -265,17 +280,36 @@ public class BLDigit {
         return result;
     }
 
-    public int submatrixNumber(int k) {
-        BigDecimal Q_fact = BigDecimalMath.factorial(this.Q);
-        int difference = this.Q - k;
-        BigDecimal deductor = BigDecimalMath.factorial(k).multiply(BigDecimalMath.factorial(difference));
-        BigDecimal H = Q_fact.divide(deductor);
-        return H.intValue();
+    public BLDigit singlesSum(int H) {
+        List<Integer> N = new ArrayList();
+        for (int i = 0; i < H; ++i) {
+            N.add(this.N.get(i)*2);
+        }
+        BLDigit result = new BLDigit(this.sign, N.size(), N);
+        return result;
+    }
+
+    public BLDigit calculateDoubleSub(Pair matrix) {
+        BLDigit result = Convertor.fromString("2");
+        int additor = matrix.first + matrix.second;
+        for (int i = 0; i < result.Q; i++) {
+            result.N.set(i,(additor+result.N.get(i)));
+        }
+        System.out.println("["+matrix.first+","+matrix.second+"] = "+result.N.toString());
+        return result;
+    }
+
+    static int signResolving(int first_sign, int second_sign, int operation, int compare) {
+        int result = 0;
+        second_sign = second_sign-operation;
+        if (first_sign!=second_sign) {
+            result = (compare==1)?1:-1;
+        }
+        return result;
     }
 
     public static int compare(BLDigit term_1, BLDigit term_2) {
         int result = 0;
-
 
         if((term_1.Q == 0)||(term_2.Q == 0))
         {
@@ -293,15 +327,13 @@ public class BLDigit {
             {
                 if((j >= term_2.Q)^(i >= term_1.Q))
                 {
-                    result = (i < term_1.Q)?-1:1;
+                    result = (i < term_1.Q)?1:-1;
                     break;
                 }
-
                 int t1i = term_1.N.get(i);
                 int t2j = term_2.N.get(j);
 
                 result = (t1i > t2j)? 1:((t1i < t2j)?-1: 0);
-
                 if(result!=0) break;
 
                 ++i;
@@ -355,8 +387,7 @@ public class BLDigit {
         return result.toString();
     }
 
-    public void show()
-    {
+    public void show() {
         System.out.println(this.toString());
     }
 
@@ -401,81 +432,4 @@ class Pair {
         }
         return false;
     }
-/*
-static BLDigit sub(BLDigit term_1, BLDigit term_2) {
-        BLDigit result = new BLDigit();
-        int compare_res = BLDigit.compare(term_1, term_2);
-        int sign_resolve = signResolving(term_1.sign, term_2.sign, 1, compare_res);
-        if(sign_resolve==0) {
-                result = add(term_1, term_2);
-        }
-        else {
-            if(compare_res==0)
-                return new BLDigit(term_1.sign, 0, Collections.emptyList());
-
-            List<Integer> decreasing = new ArrayList();
-            List<Integer> deduction = new ArrayList();
-            int res_sign = 0;
-            if(sign_resolve == 1) {
-                res_sign =term_1.sign;
-                decreasing.addAll(term_1.N);
-                deduction.addAll(term_2.N);
-            }
-            else {
-                res_sign = term_2.sign;
-                decreasing.addAll(term_2.N);
-                deduction.addAll(term_1.N);
-            }
-            Collections.sort(decreasing, Collections.reverseOrder());
-            Collections.sort(deduction, Collections.reverseOrder());
-            System.out.println(decreasing.toString());
-            System.out.println(deduction.toString());
-
-            List<Integer> N = new ArrayList();
-            int i, j;
-            for (; !deduction.isEmpty(); ) {
-                i = decreasing.size() - 1;
-                j = deduction.size() - 1;
-                for (; i >= 0; ) {
-                    if ( decreasing.get(i).intValue() >= deduction.get(j).intValue())
-                        break;
-                    else
-                        --i;
-                }
-
-                if(i < 0) i++;
-                if(decreasing.isEmpty()) break;
-                int rate1_element = decreasing.get(i).intValue();
-                int rate2_element = deduction.get(j).intValue();
-
-                decreasing.remove(i);
-                deduction.remove(j);
-                if (rate1_element == rate2_element)
-                    continue;
-                System.out.println(rate1_element+" - "+rate2_element);
-
-                while (rate2_element < rate1_element){
-                    System.out.println(rate2_element);
-                    N.add(rate2_element++);
-                }
-            }
-            if (!decreasing.isEmpty())
-                N.addAll(decreasing);
-
-            if (!deduction.isEmpty())
-                N.addAll(deduction);
-
-            Collections.sort(N, Collections.reverseOrder());
-            System.out.println(N.toString());
-
-            while (hasRepeat(N))
-                N = new ArrayList(removeRepeat(N));
-
-            Collections.sort(N, Collections.reverseOrder());
-            System.out.println("return\n"+N.toString());
-            result = new BLDigit(res_sign, N.size(), N);
-        }
-        return result;
-    }
- */
 }
