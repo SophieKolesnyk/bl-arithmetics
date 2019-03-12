@@ -1,9 +1,9 @@
 import ch.obermuhlner.math.big.BigDecimalMath;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class BLDigit {
 
@@ -22,7 +22,7 @@ public class BLDigit {
     BLDigit(BLDigit i_bl) {
         this.sign = i_bl.sign;
         this.Q = i_bl.Q;
-        this.N = i_bl.N;
+        this.N.addAll(i_bl.N);
         this.precision = i_bl.precision;
     }
 
@@ -94,68 +94,66 @@ public class BLDigit {
         return result;
     }
 
+    private static BLPair getSubConditions(BLDigit term_1, BLDigit term_2) {
+        int compare_res = compare(term_1, term_2);
+        BLPair terms = new BLPair();
+
+        if(compare_res == 1) {
+            terms.first = term_1;
+            terms.second = term_2;
+        }
+        else {
+            terms.first = term_2;
+            terms.second = term_1;
+        }
+
+        return terms;
+    }
+
     static BLDigit sub(BLDigit term_1, BLDigit term_2) {
-     //   System.out.println(term_1.toString()+" - "+term_2.toString());
-        BLDigit result = new BLDigit();
-        int compare_res = BLDigit.compare(term_1, term_2);
-        int sign_resolve = signResolving(term_1.sign, term_2.sign, 1, compare_res);
-        if(sign_resolve==0) {
+        BLDigit result = BLDigit.ZERO;
+        List<Integer>  decreasing = new ArrayList<Integer>();
+        List<Integer>  subtrahend = new ArrayList<Integer>();
+
+
+        if(signResolving(term_1.sign, term_2.sign, 1)==0) {
             result = add(term_1, term_2);
         }
         else {
-            if(compare_res==0)
-                return new BLDigit(term_1.sign, 0, Collections.emptyList());
+            if(compare(term_1, term_2)==0)
+                return result;
 
-            List<Integer> decreasing = new ArrayList();
-            List<Integer> deduction = new ArrayList();
-            int res_sign = 0;
-            if(sign_resolve == 1) {
-                res_sign =term_1.sign;
-                decreasing.addAll(term_1.N);
-                deduction.addAll(term_2.N);
-            }
-            else {
-                res_sign = 1;
-                decreasing.addAll(term_2.N);
-                deduction.addAll(term_1.N);
-            }
-            Collections.sort(decreasing, Collections.reverseOrder());
-            Collections.sort(deduction, Collections.reverseOrder());
+            BLPair in_order = getSubConditions(term_1, term_2);
+            decreasing.addAll(in_order.first.N);
+            subtrahend.addAll(in_order.second.N);
 
-            List<Integer> N = new ArrayList();
+            while (!subtrahend.isEmpty()) {
+                int i = subtrahend.size()-1;
+                int j = decreasing.size()-1;
 
-
-            int j = deduction.size()-1;
-            while ((j>=0)&&(!decreasing.isEmpty())){
-                int i = decreasing.size()-1;
-                if (decreasing.get(i)!=deduction.get(j))
-                {
-
-                    if (decreasing.get(i)<deduction.get(j)) {
-                        N.add(decreasing.get(i));
-
-                        ++j;
+                for (; j >= 0; --j) {
+                    if (decreasing.get(j)==subtrahend.get(i)) {
+                        decreasing.remove(j);
+                        subtrahend.remove(i);
+                        break;
                     }
                     else {
-                        int Ni = decreasing.get(i);
-                        int Nj = deduction.get(j);
-                        while (Nj<Ni)
-                            N.add(Nj++);
+                        if (decreasing.get(j) > subtrahend.get(i)) {
+                            int decr_j = decreasing.get(j);
+                            int subtr_i = subtrahend.get(i);
+                            decreasing.remove(j);
+                            subtrahend.remove(i);
+                            while (subtr_i < decr_j)
+                                decreasing.add(subtr_i++);
+                            break;
+                        }
                     }
                 }
-
-                --j;
-                decreasing.remove(i);
+                Collections.sort(decreasing, Collections.reverseOrder());
+                while (hasRepeat(decreasing))
+                    decreasing = new ArrayList(removeRepeat(decreasing));
             }
-            if (!decreasing.isEmpty())
-                N.addAll(decreasing);
-
-            Collections.sort(N, Collections.reverseOrder());
-
-            while (hasRepeat(N))
-                N = new ArrayList(removeRepeat(N));
-
-            result = new BLDigit(res_sign, N.size(), N);
+            result = new BLDigit(in_order.first.sign, decreasing.size(), decreasing);
         }
 
         return result;
@@ -187,56 +185,51 @@ public class BLDigit {
 
     public static BLDigit sqrt(BLDigit bl){
         BLDigit O = bl;
-        int N = O.N.get(0);
         List<Integer> result = new ArrayList();
-        result.add(N/2);
+        result.add(O.N.get(0)/2);
         BLDigit sqrt = new BLDigit(0,1,result);
         BLDigit square = new BLDigit(0, result.size(),new ArrayList(Arrays.asList(result.get(0)*2)));
-        BLDigit reminder = BLDigit.ZERO;
                 //square;
         BLDigit sqrt_degree = square;
-
+        BLDigit prev_sqrt_degree = BLDigit.ZERO;
+        Integer y = sqrt.N.get(0);
         int i = 1;
 
-        while ((i<20)&&(!O.N.isEmpty())) {
+        while ((i<10)&&(O.Q!=0)) {
 
-            System.out.println("reminder = "+reminder);
-            System.out.println("sqrt = "+sqrt.toString());
-            System.out.println("sqrt squeare = "+square.toString());
-            System.out.println("sqrt_degree = "+sqrt_degree.toString());
-            System.out.println("begin O = "+O.toString());
+            System.out.println("sqrt = "+sqrt);
 
             square = square(sqrt);
-            sqrt_degree = sub(square, reminder);
-            if (sub(O, sqrt_degree).sign==1) {
+            sqrt_degree = sub(square, prev_sqrt_degree);
+
+            System.out.println("sqrt_degree = "+ square + " - " + prev_sqrt_degree +" = "+sqrt_degree.N.toString());
+
+            BLDigit O_next = sub(O, sqrt_degree);
+            System.out.println("O(i+1) = " + O.toString() + " - " + sqrt_degree + " = "+O_next.toString());
+
+            if (O_next.sign==1) {
                 int position = sqrt.N.size() - 1;
-                BLDigit y = new BLDigit(0, 1, Arrays.asList(sqrt.N.get(position)-1));
+                sqrt.N.remove(y);
                 System.out.println("Decresed last sqrt element to 1 "+y);
-                sqrt.N.remove(position);
-                sqrt = add(sqrt, y);
+                sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y-1)));
             }
             else {
                 O = sub(O, sqrt_degree);
                 System.out.println("change O = "+O.toString());
-
                 if(O.Q==0)break;
-                N = O.N.get(0);
-                Integer y =Math.abs(N-1-sqrt.N.get(0));
+                int N = O.N.get(0);
+                prev_sqrt_degree = add(prev_sqrt_degree, sqrt_degree);
+
+                y=Math.abs(N-1-sqrt.N.get(0));
+
+                while (sqrt.N.contains(y))
+                    y = y-1;
                 System.out.println("y = "+y);
-
-                if (!sqrt.N.contains(y))
-                    reminder= add(sqrt_degree, reminder);
-
 
                 sqrt = add(sqrt, new BLDigit(0, 1,  Arrays.asList(y)));
             }
-            System.out.println("sqrt = "+sqrt.toString());
-            System.out.println("end O = "+O.toString());
-
             System.out.println("\n");
             ++i;
-          //  Collections.sort(result, Collections.reverseOrder());
-
         }
 
 
@@ -319,14 +312,14 @@ public class BLDigit {
         return result;
     }
 
-    static int signResolving(int first_sign, int second_sign, int operation, int compare) {
+    static int signResolving(int first_sign, int second_sign, int operation) {
 //        System.out.println("first_sign = "+first_sign+"\tsecond_sign = "+second_sign);
 //        System.out.println("operation is "+operation+"\tcompare result = "+compare);
 
         int result = 0;
         second_sign = second_sign-operation;
         if (first_sign!=second_sign) {
-            result = (compare==1)?1:-1;
+            result = 1;
         }
       //  System.out.println(result);
         return result;

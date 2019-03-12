@@ -30,3 +30,20 @@ class Pair {
         return false;
     }
 }
+
+class BLPair {
+    public BLDigit first;
+    public BLDigit second;
+
+    BLPair() {}
+
+    BLPair(BLDigit i_first, BLDigit i_second) {
+        this.first = i_first;
+        this.second = i_second;
+    }
+
+    BLPair(BLPair i_pair) {
+        this.first = i_pair.first;
+        this.second = i_pair.second;
+    }
+}
