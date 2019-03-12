@@ -128,6 +128,12 @@ public class BigInput {
                 BLDigit after_point = mergeBLsAfterPoint(ap_str, p_size);
                 result = BLDigit.add(result, after_point);
             }
+            List<Integer> formated = new ArrayList();
+            formated.addAll(result.N);
+            while (BLDigit.hasRepeat(formated)){
+                formated = BLDigit.removeRepeat(formated);
+            }
+            result = new BLDigit(result.sign, formated.size(), formated);
         } else
                 System.out.println("Invalid input number.");
 
