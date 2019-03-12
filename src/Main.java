@@ -36,15 +36,12 @@ public class Main {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         System.out.println("Введіть число: ");
-        String input = reader.readLine();
-        //System.out.println("Correct answer = " + Convertor.fromString("252"));
-        //System.out.println(" = " + BigDecimalMath.sqrt(new BigDecimal("63504"), new MathContext(20)));
+        String input = "5475649896565498462132117203";//reader.readLine();
+        System.out.println("Correct answer = " + BigInput.HugeDecToBL("73997634398453"));
 
-        BLDigit X = Convertor.fromString(input);
-        System.out.println(X.toString());
+        BLDigit X = BigInput.HugeDecToBL(input);
         BLDigit result = BLDigit.sqrt(X);
         System.out.println(result.toString());
         System.out.println(Convertor.toDecimal(result));
-
     }
 }

@@ -178,53 +178,33 @@ public class BLDigit {
         return result;
     }
 
-
     public static BLDigit sqrt(BLDigit bl) {
         BLDigit O = bl;
-        List<Integer> result = new ArrayList();
-        result.add(O.N.get(0) / 2);
-        BLDigit sqrt = new BLDigit(0, 1, result);
-        BLDigit square = new BLDigit(0, result.size(), new ArrayList(Arrays.asList(result.get(0) * 2)));
+        BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
+        BLDigit square = new BLDigit(0, 1, new ArrayList(Arrays.asList(sqrt.N.get(0) * 2)));
         BLDigit sqrt_degree = square;
         BLDigit prev_sqrt_degree = BLDigit.ZERO;
         Integer y = sqrt.N.get(0);
-        int i = 1;
-
         while ((sqrt.N.get(sqrt.N.size()-1)>0) && (O.Q != 0)) {
             BLDigit O_next = sub(O, sqrt_degree);
-            System.out.println("sqrt = " + sqrt);
-            System.out.println("sqrt_degree = " + square + " - " + prev_sqrt_degree);
-
-            System.out.println("sqrt_degree = " + sqrt_degree);
-            System.out.println("O = " + O_next);
 
             if (O_next.sign == 1) {
-                int position = sqrt.N.size() - 1;
                 sqrt.N.remove(y);
                 y = y - 1;
-                System.out.println("\ny - 1 = " + y);
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
             } else {
                 O = sub(O, sqrt_degree);
-
                 if (O.Q == 0) break;
                 int N = O.N.get(0);
                 prev_sqrt_degree = add(prev_sqrt_degree, sqrt_degree);
-
                 y = Math.abs(N - 1 - sqrt.N.get(0));
-
                 while (sqrt.N.contains(y))
                     y = y - 1;
-                System.out.println("\ny = " + y);
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
             }
             square = square(sqrt);
             sqrt_degree = sub(square, prev_sqrt_degree);
-
-            ++i;
-
         }
-
 
         return sqrt;
     }
