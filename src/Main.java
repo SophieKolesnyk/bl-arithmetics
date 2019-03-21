@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.Arrays;
-import java.util.List;
 
 
 public class Main {
@@ -33,15 +30,28 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
+        BLDigit N = Convertor.fromString("161");
+        BLPair keys = Calculator.findSecretKeys(N);
+        System.out.println(keys.first + "\n" + keys.second);
+        System.out.println(Convertor.toDecimal(keys.first) + "\n" + Convertor.toDecimal(keys.second));
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         System.out.println("Введіть число: ");
-        String input = "5475649896565498462132117203";//reader.readLine();
-        System.out.println("Correct answer = " + BigInput.HugeDecToBL("73997634398453"));
+        String[] input = reader.readLine().split(" ");
 
-        BLDigit X = BigInput.HugeDecToBL(input);
-        BLDigit result = BLDigit.sqrt(X);
-        System.out.println(result.toString());
+
+        BLDigit X = BigInput.HugeDecToBL(input[0]);
+        BLDigit Y = BigInput.HugeDecToBL(input[1]);
+
+        BigDecimal divider = new BigDecimal(input[0]);
+        BigDecimal divisior = new BigDecimal(input[1]);
+        BigDecimal dec_res = divider.divide(divisior);
+
+        BLDigit result = BLDigit.div(X, Y);
+        System.out.println(result);
         System.out.println(Convertor.toDecimal(result));
+        System.out.println("Correct answer = " + dec_res + "\n" + BigInput.HugeDecToBL(dec_res.toString()));
+
     }
 }

@@ -220,12 +220,13 @@ public class BLDigit {
                     else break;
                 }
             }
-
             result = new BLDigit((result.sign = divider.sign*divisior.sign), N.size(), N);
         }
 
         return result;
     }
+
+
     public static BLDigit sqrt(BLDigit bl) {
         BLDigit O = bl;
         BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
@@ -373,6 +374,16 @@ public class BLDigit {
 
         }
         return result;
+    }
+
+    public static BLDigit wihtoutFractPart(BLDigit bl) {
+
+        List<Integer> result = new ArrayList();
+        for (int i = 0; i < bl.N.size(); ++i) {
+            if (bl.N.get(i)>=0)
+                result.add(bl.N.get(i));
+        }
+        return new BLDigit(bl.sign, result.size(), result);
     }
 
     public static boolean hasRepeat(List<Integer> i_list) {
