@@ -40,7 +40,7 @@ public class BigInput {
         List<BLDigit> bls = new ArrayList();
         for (int i = 0; i < portions.size(); ++i) {
             BigDecimal dec_str = (p_size > 0) ? (new BigDecimal(portions.get(i))) : (new BigDecimal("0." + portions.get(i)));
-            BLDigit bl = Convertor.fromDecimal(dec_str);
+            BLDigit bl = Converter.fromDecimal(dec_str);
             bls.add(bl);
         }
 
@@ -58,7 +58,7 @@ public class BigInput {
         } else {
             result = "0." + temp.substring(0, temp.length() - 1) + "1";
         }
-        BLDigit multiplier = Convertor.fromDecimal(new BigDecimal(result));
+        BLDigit multiplier = Converter.fromDecimal(new BigDecimal(result));
 
         return multiplier;
     }
@@ -80,7 +80,6 @@ public class BigInput {
 
         return merge;
     }
-
 
     public static BLDigit mergeBLsAfterPoint(String i_str, int p_size) {
         List<BLDigit> bl_portions = portiosToBLs(i_str, p_size);
@@ -105,7 +104,6 @@ public class BigInput {
 
         return merge;
     }
-
 
     public static BLDigit HugeDecToBL(String i_str) {
         BLDigit result = BLDigit.ZERO;
@@ -135,7 +133,7 @@ public class BigInput {
             }
             result = new BLDigit(result.sign, formated.size(), formated);
         } else
-                System.out.println("Invalid input number.");
+            System.out.println("Invalid input number.");
 
         return result;
 

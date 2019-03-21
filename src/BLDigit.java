@@ -98,22 +98,7 @@ public class BLDigit {
         return result;
     }
 
-    private static BLPair getSubConditions(BLDigit term_1, BLDigit term_2) {
-        int compare_res = compare(term_1, term_2);
-        BLPair terms = new BLPair();
-        int t2_sign = (term_2.sign == 0) ? 1 : 0;
-
-        if (compare_res == 1) {
-            terms.first = term_1;
-            terms.second = term_2;
-        } else {
-            terms.first = new BLDigit(t2_sign, term_2.Q, term_2.N);
-            terms.second = term_1;
-        }
-        return terms;
-    }
-
-    static BLDigit sub(BLDigit term_1, BLDigit term_2) {
+    public static BLDigit sub(BLDigit term_1, BLDigit term_2) {
         BLDigit result = BLDigit.ZERO;
         List<Integer> decreasing = new ArrayList<Integer>();
         List<Integer> subtrahend = new ArrayList<Integer>();
@@ -196,22 +181,18 @@ public class BLDigit {
         else {
             List<Integer> N = new ArrayList();
 
-            BLDigit remainder = new BLDigit(divider);
-
             int after_point = 0;
             int D = divider.N.get(0) - divisior.N.get(0);
             int divisior_senior = divisior.N.get(0);
-            BLDigit mult_res = new BLDigit();
-
 
             while ((after_point < divisior.precision) && (divider.Q > 0)) {
-                mult_res = multByCoefficient(divisior, D);
+                BLDigit mult_res = multByCoefficient(divisior, D);
                 if (compare(divider, mult_res) < 0)
                     D -= 1;
                 else {
                     after_point = (D<0)? (after_point + 1):after_point;
                     N.add(D);
-                    remainder = sub(divider, mult_res);
+                    BLDigit remainder = sub(divider, mult_res);
 
                     if (compare(remainder, BLDigit.ZERO) != 0) {
                         divider = new BLDigit(remainder);
@@ -226,7 +207,6 @@ public class BLDigit {
         return result;
     }
 
-
     public static BLDigit sqrt(BLDigit bl) {
         BLDigit O = bl;
         BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
@@ -234,19 +214,20 @@ public class BLDigit {
         BLDigit sqrt_degree = square;
         BLDigit prev_sqrt_degree = BLDigit.ZERO;
         Integer y = sqrt.N.get(0);
+
         while ((sqrt.N.get(sqrt.N.size()-1)>0) && (O.Q != 0)) {
             BLDigit O_next = sub(O, sqrt_degree);
-
             if (O_next.sign == 1) {
                 sqrt.N.remove(y);
                 y = y - 1;
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
+
             } else {
                 O = sub(O, sqrt_degree);
                 if (O.Q == 0) break;
                 int N = O.N.get(0);
-                prev_sqrt_degree = add(prev_sqrt_degree, sqrt_degree);
-                y = Math.abs(N - 1 - sqrt.N.get(0));
+                prev_sqrt_degree = square;
+                y = N - 1 - sqrt.N.get(0);
                 while (sqrt.N.contains(y))
                     y = y - 1;
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
@@ -254,13 +235,11 @@ public class BLDigit {
             square = square(sqrt);
             sqrt_degree = sub(square, prev_sqrt_degree);
         }
-
-        return sqrt;
+        return withoutFractPart(sqrt);
     }
 
     public static BLDigit square(BLDigit bl1) {
         BLDigit result = BLDigit.ZERO;
-        //       System.out.println("("+bl1.N.toString()+") ^2");
         int singles_numb = bl1.submatrixNumber(1);
         if (singles_numb > 0)
             result = bl1.singlesSum(singles_numb);
@@ -268,11 +247,23 @@ public class BLDigit {
             int doubles_numb = bl1.submatrixNumber(2);
             result = BLDigit.add(result, bl1.doubleSubSum(doubles_numb));
         }
-        //  System.out.println(result.N.toString());
         return result;
     }
 
+    private static BLPair getSubConditions(BLDigit term_1, BLDigit term_2) {
+        int compare_res = compare(term_1, term_2);
+        BLPair terms = new BLPair();
+        int t2_sign = (term_2.sign == 0) ? 1 : 0;
 
+        if (compare_res == 1) {
+            terms.first = term_1;
+            terms.second = term_2;
+        } else {
+            terms.first = new BLDigit(t2_sign, term_2.Q, term_2.N);
+            terms.second = term_1;
+        }
+        return terms;
+    }
 
     public List<Pair> selectPairs(int H) {
         List<Pair> result = new ArrayList();
@@ -305,7 +296,6 @@ public class BLDigit {
     public BLDigit doubleSubSum(int H) {
         List<Pair> pairs = selectPairs(H);
         BLDigit result = BLDigit.ZERO;
-        //  System.out.println(H+" double subs");
         for (Pair pair : pairs) {
             BLDigit additor = calculateDoubleSub(pair);
             result = BLDigit.add(result, additor);
@@ -319,20 +309,17 @@ public class BLDigit {
             N.add(this.N.get(i) * 2);
         }
         BLDigit result = new BLDigit(this.sign, N.size(), N);
-        //       System.out.println("single subs sum\n"+result.N.toString());
         return result;
     }
 
     public BLDigit calculateDoubleSub(Pair matrix) {
-        BLDigit result = Convertor.fromString("2");
+        BLDigit result = Converter.fromString("2");
         int additor = matrix.first + matrix.second;
         for (int i = 0; i < result.Q; i++) {
             result.N.set(i, (additor + result.N.get(i)));
         }
-        //       System.out.println("["+matrix.first+","+matrix.second+"] = "+result.N.toString());
         return result;
     }
-
 
     static int signResolving(int first_sign, int second_sign, int operation) {
         int result = 0;
@@ -346,7 +333,6 @@ public class BLDigit {
 
     public static int compare(BLDigit term_1, BLDigit term_2) {
         int result = 0;
-        //       System.out.println(term_1.toString()+" compare "+term_2.toString());
         if ((term_1.Q == 0) || (term_2.Q == 0)) {
             if ((term_1.Q != 0) ^ (term_2.Q != 0))
                 result = (term_1.Q == 0) ? -1 : 1;
@@ -374,16 +360,6 @@ public class BLDigit {
 
         }
         return result;
-    }
-
-    public static BLDigit wihtoutFractPart(BLDigit bl) {
-
-        List<Integer> result = new ArrayList();
-        for (int i = 0; i < bl.N.size(); ++i) {
-            if (bl.N.get(i)>=0)
-                result.add(bl.N.get(i));
-        }
-        return new BLDigit(bl.sign, result.size(), result);
     }
 
     public static boolean hasRepeat(List<Integer> i_list) {
@@ -449,6 +425,16 @@ public class BLDigit {
 
     public void show() {
         System.out.println(this.toString());
+    }
+
+    public static BLDigit withoutFractPart(BLDigit bl) {
+
+        List<Integer> result = new ArrayList();
+        for (int i = 0; i < bl.N.size(); ++i) {
+            if (bl.N.get(i)>=0)
+                result.add(bl.N.get(i));
+        }
+        return new BLDigit(bl.sign, result.size(), result);
     }
 
 }

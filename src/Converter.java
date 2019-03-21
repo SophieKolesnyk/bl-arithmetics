@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Convertor {
-
-
-
+public class Converter {
 
     public static BigDecimal cutZeros(BigDecimal i_dec) {
         String str_dec = "";
@@ -51,15 +48,11 @@ public class Convertor {
     }
 
     public static BLDigit fromString(String i_digit){
-        BLDigit bl= new BLDigit();
-        if (i_digit.length()<10)
-        {
-            BigDecimal decimal = new BigDecimal(i_digit);
-            bl = fromDecimal(decimal);
-        }
-        else
-            bl = BigInput.HugeDecToBL(i_digit);
-        return bl;
+        if (i_digit.length() > 10)
+            return BigInput.HugeDecToBL(i_digit);
+
+        BigDecimal decimal = new BigDecimal(i_digit);
+        return fromDecimal(decimal);
     }
 
     public static List<Integer> intPartList(String int_part) {
@@ -84,7 +77,7 @@ public class Convertor {
         MathContext context = new MathContext(precision);
         BigDecimal dec_fract = new BigDecimal("0."+ fraction_part);
 
-        if(fraction_part.toString()=="0.0") return result;
+        if(fraction_part == "0.0") return result;
 
         int bit_position = 0;
         BigDecimal next_val = dec_fract;
@@ -111,11 +104,9 @@ public class Convertor {
         BigDecimal result = new BigDecimal("0.0");
         BigDecimal base = new BigDecimal("2.0");
 
-
-        for (int i = 0; i < i_bl.Q; ){
+        for (int i = 0; i < i_bl.Q; ) {
             BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(i_bl.precision));
             result = result.add(pow);
-
             ++i;
         }
         result = result.setScale(i_bl.precision/20, RoundingMode.HALF_UP);
