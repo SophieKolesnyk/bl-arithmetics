@@ -9,22 +9,29 @@ public class BLDigit {
 
     public int sign = 0;
     public int Q = 0;
-    public List<Integer> N;
+    public List<Integer> N = new ArrayList();
     public int precision = 20;
 
     /*------------------------Constructors------------------------*/
-    BLDigit() {
-    }
+    BLDigit() {}
 
     BLDigit(int init_precision) {
         this.precision = init_precision;
     }
 
     BLDigit(BLDigit i_bl) {
-        this.sign = i_bl.sign;
-        this.Q = i_bl.Q;
-        this.N.addAll(i_bl.N);
         this.precision = i_bl.precision;
+        if (compare(i_bl, BLDigit.ZERO) != 0) {
+            this.sign = i_bl.sign;
+            this.Q = i_bl.Q;
+            this.N.addAll(i_bl.N);
+        }
+        else {
+            this.sign = 0;
+            this.Q = 0;
+            this.N = Collections.emptyList();
+        }
+
     }
 
     BLDigit(int i_sign, int i_Q, List<Integer> i_N) {
@@ -178,6 +185,47 @@ public class BLDigit {
         return result;
     }
 
+    public static BLDigit div(BLDigit divider, BLDigit divisior) {
+        BLDigit result = new BLDigit();
+
+        if ((compare(divisior, BLDigit.ZERO) == 0) || (compare(divider, BLDigit.ZERO) == 0)) {
+            if (compare(divisior, BLDigit.ZERO) == 0)
+                throw new ArithmeticException("Forbidden operation - 'Division by ZERO'");
+            else result = BLDigit.ZERO;
+        }
+        else {
+            List<Integer> N = new ArrayList();
+
+            BLDigit remainder = new BLDigit(divider);
+
+            int after_point = 0;
+            int D = divider.N.get(0) - divisior.N.get(0);
+            int divisior_senior = divisior.N.get(0);
+            BLDigit mult_res = new BLDigit();
+
+
+            while ((after_point < divisior.precision) && (divider.Q > 0)) {
+                mult_res = multByCoefficient(divisior, D);
+                if (compare(divider, mult_res) < 0)
+                    D -= 1;
+                else {
+                    after_point = (D<0)? (after_point + 1):after_point;
+                    N.add(D);
+                    remainder = sub(divider, mult_res);
+
+                    if (compare(remainder, BLDigit.ZERO) != 0) {
+                        divider = new BLDigit(remainder);
+                        D = divider.N.get(0) - divisior_senior;
+                    }
+                    else break;
+                }
+            }
+
+            result = new BLDigit((result.sign = divider.sign*divisior.sign), N.size(), N);
+        }
+
+        return result;
+    }
     public static BLDigit sqrt(BLDigit bl) {
         BLDigit O = bl;
         BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
@@ -222,6 +270,8 @@ public class BLDigit {
         //  System.out.println(result.N.toString());
         return result;
     }
+
+
 
     public List<Pair> selectPairs(int H) {
         List<Pair> result = new ArrayList();
@@ -281,6 +331,7 @@ public class BLDigit {
         //       System.out.println("["+matrix.first+","+matrix.second+"] = "+result.N.toString());
         return result;
     }
+
 
     static int signResolving(int first_sign, int second_sign, int operation) {
         int result = 0;
@@ -359,6 +410,17 @@ public class BLDigit {
         }
 
         return result;
+    }
+
+    public static BLDigit multByCoefficient(BLDigit bl_digit, int coefficient) {
+        List<Integer> N = new ArrayList();
+
+        for (int i = 0; i < bl_digit.Q; ++i)
+            N.add(bl_digit.N.get(i)+coefficient);
+
+        int sign = bl_digit.sign*((coefficient>0)?0:1);
+
+        return new BLDigit(sign, N.size(), N);
     }
 
     public String toString() {
