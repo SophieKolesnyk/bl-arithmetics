@@ -1,25 +1,20 @@
 import ch.obermuhlner.math.big.BigDecimalMath;
-
 import java.io.*;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 public class Calculator {
 
-    /*--------------------------------Methods of class--------------------------------*/
 
+    /*--------------------------------Methods of class--------------------------------*/
     public static BLDigit add(BLDigit bl1, BLDigit bl2) {
         BLDigit result = new BLDigit();
         if (bl1.sign != bl2.sign) {
             result = sub(bl1, bl2);
         } else {
-            int res_prec = (bl1.precision > bl2.precision) ? bl1.precision : bl2.precision;
-            result = new BLDigit(res_prec);
+            result = new BLDigit();
             List<Integer> result_list = new ArrayList();
 
             int bl1_to_zero = BLDigit.compare(bl1, BLDigit.ZERO);
@@ -32,14 +27,15 @@ public class Calculator {
                 } else result = BLDigit.ZERO;
             else {
                 int i1 = 0, j2 = 0;
-                int comparison;
+//                int comparison;
                 Integer res_i = 0;
 
                 for (; i1 < bl1.N.size() && j2 < bl2.N.size(); ) {
-                    comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
+                  //  comparison = Integer.compare(bl1.N.get(i1), bl2.N.get(j2));
 
-                    if (comparison != 0) {
-                        if (comparison > 0)
+//                    if (comparison != 0) {
+                    if (bl1.N.get(i1) != bl2.N.get(j2)) {
+                        if (bl1.N.get(i1) > bl2.N.get(j2))
                             res_i = bl1.N.get(i1++);
                         else
                             res_i = bl2.N.get(j2++);
@@ -121,8 +117,7 @@ public class Calculator {
         List<Integer> result_list = new ArrayList();
         List<Integer> term_1 = bl1.N;
         List<Integer> term_2 = bl2.N;
-        int res_prec = bl1.precision + bl2.precision;
-        BLDigit result = new BLDigit(res_prec);
+        BLDigit result = new BLDigit();
 
         for (int i = 0; i < term_1.size(); ++i) {
             for (int j = 0; j < term_2.size(); ++j) {
@@ -152,7 +147,7 @@ public class Calculator {
             int D = divider.N.get(0) - divisior.N.get(0);
             int divisior_senior = divisior.N.get(0);
 
-            while ((after_point < divisior.precision) && (divider.Q > 0)) {
+            while ((after_point < Converter.precision) && (divider.Q > 0)) {
                 BLDigit mult_res = multByCoefficient(divisior, D);
                 if (BLDigit.compare(divider, mult_res) < 0)
                     D -= 1;
@@ -230,55 +225,37 @@ public class Calculator {
         return result;
     }
 
-    public static BLPair findSecretKeys(BLDigit N) {
+    public static BLPair findSecretKeys(BLDigit N) throws IOException  {
+    //    FileOutputStream out = new FileOutputStream("/home/sophie/Desktop/keys_searching.txt");
         BLDigit P1 = sqrt(N);
         BLDigit P2 = new BLDigit();
         BLDigit divisior = BLDigit.ZERO;
         BLDigit mult = BLDigit.ZERO;
-        int i = 1;
+        BLDigit i = new BLDigit("4861333901857487042388026012815767174661029535799632854021928025");
+        BLDigit max_range = new BLDigit("4861333901857487042388026012815767174661029535799632854021928025");
+        System.out.println(i);
 
+  //      String title = "\t N = " + N.toString() + "\n\t P1 = " + P1 + "\n\t------------------------------------------------------------------------------------\n";
+   //     title += String.format("\t| %-20s | %-20s | %-20s | %-30s |%n", "index", "P1-i", "P2", "mult") + "\t------------------------------------------------------------------------------------\n";
+  //      out.write(title.getBytes());
 
-        while (BLDigit.compare(mult, N)!=0) {
-            divisior = sub(P1, Converter.toBLDigit(i));
+        while ((BLDigit.compare(mult, N)!=0)&&(BLDigit.compare(i,max_range)!=0)) {
+            System.out.println(i);
+
+            divisior = sub(P1,i);
             P2 = withoutFractPart(div(N, divisior));
             mult = mult(P2, divisior);
-            ++i;
+//         //   String line = String.format("\t| %-20s | %-20s | %-20s | %-30s |%n", Converter.toDecimal(i).toString(), Converter.toDecimal(divisior).toString(), Converter.toDecimal(P2).toString(), Converter.toDecimal(mult).toString());
+          //  String line = String.format("\t| %-20s | %-20s | %-20s | %-30s |%n", i.toString(), divisior.toString(), P2.toString(), mult.toString());
+           // System.out.println(line);
+//            out.write(line.getBytes());
+            i = add(i,BLDigit.ONE);
         }
+
+//        out.write(("q = " + divisior + "p = " + P2).getBytes());
+//        out.write(("q = " + Converter.toDecimal(divisior).toString() + "p = " + Converter.toDecimal(P2).toString()).getBytes());
+//        out.close();
         return new BLPair(withoutFractPart(divisior), withoutFractPart(P2));
-    }
-
-    public static Pair findSecretKeys(BigInteger N) throws IOException  {
-        FileOutputStream out = new FileOutputStream("/home/sophie/Desktop/searching_priv_keys.txt");
-        BigDecimal N_dec = new BigDecimal(N.toString());
-        BigDecimal P2 = new BigDecimal("0.0");
-
-        BigInteger P1 = N.sqrt();
-        BigInteger divisior = new BigInteger("0");
-        BigInteger P3 = new BigInteger("0");
-        String title = "\t N = " + N.toString() + "\n\t P1 = " + P1 + "\n\t------------------------------------------\n" +String.format("\t| %-10s | %-10s | %-12s |%n", "index", "as to N", "N - mult_n")+"\t------------------------------------------\n";
-
-        out.write(title.getBytes());
-        BigInteger i = new BigInteger("4000000000");
-        while (i.compareTo(new BigInteger("5000000000")) < 0) {
-            System.out.println(i);
-            divisior = P1.subtract(i);
-            P2 = N_dec.divide(new BigDecimal(divisior), 0, RoundingMode.HALF_DOWN);
-            P3 = divisior.multiply(P2.toBigInteger());
-            i = i.add(new BigInteger("1"));
-            BigInteger difference = P3.subtract(N).abs();
-            if (P3.subtract(N).abs().compareTo(new BigInteger("50000"))<0) {
-                String line = String.format("\t| %-10s | %-10s | %-12s |%n", i.toString(), (P3.compareTo(N) > 0) ? "greater" : "less", difference.toString());
-                out.write(line.getBytes());
-            }
-        }
-        out.write(("q = " + divisior.intValue() + "p = " + P2.intValue()).getBytes());
-
-        out.close();
-        Pair result = new Pair(divisior.intValue(), P2.intValue());
-
-        System.out.println("q = " + result.first + "p = " + result.second);
-
-        return result;
     }
 
     public static List<Integer> removeRepeat(List<Integer> i_list) {
@@ -406,5 +383,4 @@ public class Calculator {
         }
         return new BLDigit(bl.sign, result.size(), result);
     }
-
 }

@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
@@ -7,16 +8,10 @@ public class BLDigit {
     public int sign = 0;
     public int Q = 0;
     public List<Integer> N = new ArrayList();
-    public int precision = 20;
 
     BLDigit() {}
 
-    BLDigit(int init_precision) {
-        this.precision = init_precision;
-    }
-
     BLDigit(BLDigit i_bl) {
-        this.precision = i_bl.precision;
         if (compare(i_bl, BLDigit.ZERO) != 0) {
             this.sign = i_bl.sign;
             this.Q = i_bl.Q;
@@ -36,8 +31,16 @@ public class BLDigit {
         this.N = i_N;
     }
 
+    BLDigit(String i_dec) {
+        BLDigit i_bl = Converter.toBLDigit(i_dec);
+        this.sign = i_bl.sign;
+        this.N = i_bl.N;
+        this.Q = i_bl.Q;
+    }
 
-    public static final BLDigit ZERO = new BLDigit(0, 0, Collections.emptyList());
+
+    public static final BLDigit ZERO = new BLDigit(0, 0,  new ArrayList(Arrays.asList()));
+    public static final BLDigit ONE = new BLDigit(0, 1, new ArrayList(Arrays.asList(0)));
 
 
 
@@ -72,6 +75,13 @@ public class BLDigit {
         return result;
     }
 
+    public static boolean has_fraction(BLDigit i_bl){
+        if (i_bl.N.get(i_bl.Q-1)<0)
+            return true;
+
+        return false;
+    }
+
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(this.sign);
@@ -88,5 +98,4 @@ public class BLDigit {
     public void show() {
         System.out.println(this.toString());
     }
-
 }

@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 public class Converter {
 
+    public static long precision = 100;
+
     public static BLDigit toBLDigit(String i_digit){
         if (i_digit.length() > 10)
             return HugeDecToBL(i_digit);
@@ -39,19 +41,34 @@ public class Converter {
 
     public static BigDecimal toDecimal(BLDigit i_bl) {
         Collections.sort(i_bl.N, Collections.reverseOrder());
-        BigDecimal result = new BigDecimal("0.0");
+        BigDecimal int_part = new BigDecimal("0.0");
+        BigDecimal fract_part = new BigDecimal("0.0");
         BigDecimal base = new BigDecimal("2.0");
 
-        for (int i = 0; i < i_bl.Q; ) {
+//        for (int i = 0; i < i_bl.Q; ) {
+//            BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(500));
+//            result = result.add(pow);
+//            ++i;
+//        }
+        int i = 0;
+        while ((i<i_bl.Q)&&(i_bl.N.get(i)>=0)) {
             BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(500));
-            result = result.add(pow);
+            int_part = int_part.add(pow);
             ++i;
         }
-        result = result.setScale(i_bl.precision/20, RoundingMode.HALF_UP);
-        return cutZeros(result);
+        if (i<i_bl.Q) {
+            int max_after_point = ((i_bl.Q-i)>500)?500:(i_bl.Q-i);
+            while (i<max_after_point) {
+                BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(500));
+                fract_part = fract_part.add(pow);
+                ++i;
+            }
+            fract_part = new BigDecimal(fract_part.toString(), new MathContext((int)(precision/10), RoundingMode.HALF_UP));
+        }
+
+
+        return cutZeros(int_part.add(fract_part));
     }
-
-
 
     private static BLDigit HugeDecToBL(String i_str) {
         BLDigit result = BLDigit.ZERO;
@@ -96,8 +113,8 @@ public class Converter {
         if(str_digit.contains(".")){
             String[] partition = str_digit.split("\\.");
             N.addAll(intPartList(partition[0]));
-            result.precision *= partition[1].length();
-            N.addAll(fractPartList( partition[1], result.precision));
+//            precision *= partition[1].length();
+            N.addAll(fractPartList( partition[1], precision));
         }
         else
             N.addAll(intPartList(str_digit));
@@ -122,11 +139,11 @@ public class Converter {
         return  result;
     }
 
-    private static List<Integer> fractPartList(String fraction_part, int precision) {
+    private static List<Integer> fractPartList(String fraction_part, long precision) {
         List<Integer> result = new ArrayList();
 
         if(fraction_part=="0.0") return result;
-        MathContext context = new MathContext(precision);
+        MathContext context = new MathContext((int)(precision));
         BigDecimal dec_fract = new BigDecimal("0."+ fraction_part);
 
         if(fraction_part == "0.0") return result;
@@ -150,8 +167,6 @@ public class Converter {
         }
         return result;
     }
-
-
 
     private static BigDecimal cutZeros(BigDecimal i_dec) {
         String str_dec = "";
@@ -199,6 +214,7 @@ public class Converter {
         for (int i = 0; i < portions.size(); ++i) {
             BLDigit bl = (p_size > 0) ? toBLDigit(portions.get(i)): toBLDigit("0." + portions.get(i));
             bls.add(bl);
+         //   System.out.println("precision = " + precision + "\n" + portions.get(i) + "\n" + bl);
         }
         return bls;
     }

@@ -5,6 +5,8 @@ logs
 # Ignore build files
 public
 .idea
-out
+target
 bl-arithmetics.iml
+pom.xml
+
 .gitignore
