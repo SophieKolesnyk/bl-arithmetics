@@ -183,10 +183,7 @@ public class Calculator {
         return result;
     }
 
-
-
-    public static BLDigit sqrt(BLDigit bl)  throws IOException  {
-        FileOutputStream out = new FileOutputStream("/home/sophie/Desktop/keys_searching.txt");
+    public static BLDigit purt_sqrt(BLDigit bl, BLDigit sum)  throws IOException  {
         BLDigit O = bl;
         BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
         BLDigit square = new BLDigit(0, 1, new ArrayList(Arrays.asList(sqrt.N.get(0) * 2)));
@@ -194,20 +191,52 @@ public class Calculator {
         BLDigit prev_sqrt_degree = BLDigit.ZERO;
         Integer y = sqrt.N.get(0);
         int i = 0;
-//        while (O.Q != 0) {
-        while ((sqrt.N.get(sqrt.N.size()-1)>=0) && (O.Q != 0)) {
-//            System.out.println("O_next = O - sqrt_degree");
-//        while ((i<precision) && (O.Q != 0)) {
+//        while ((i<precision)&&(O.Q != 0)) {
+        while (O.Q != 0) {
+                BLDigit O_next = sub(O, sqrt_degree);
+                if (O_next.sign == 1) {
+                    sqrt.N.remove(y);
+                    y = y - 1;
+                    sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
 
+                } else {
+                    O = O_next;
+                    if (O.Q == 0) break;
+                    int N = O.N.get(0);
+                    y = N - 1 - sqrt.N.get(0);
+                    while (sqrt.N.contains(y))
+                        y = y - 1;
+                    prev_sqrt_degree = square;
+                    sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
+                }
+                square = square(sqrt);
+                sqrt_degree = sub(square, prev_sqrt_degree);
+                if (sqrt.N.get(sqrt.Q-1)<0) break;
+//                if (sqrt.N.get(sqrt.Q-1)<0) {
+//                    ++i;
+//                }
+        }
+//        sqrt = add(sqrt, BLDigit.ONE);
+//        return sqrt;
+        return withoutFractPart(sqrt);
+    }
+
+
+
+    public static BLDigit sqrt(BLDigit bl)  throws IOException  {
+        BLDigit O = bl;
+        BLDigit sqrt = new BLDigit(0, 1, Arrays.asList(O.N.get(0) / 2));
+        BLDigit square = new BLDigit(0, 1, new ArrayList(Arrays.asList(sqrt.N.get(0) * 2)));
+        BLDigit sqrt_degree = square;
+        BLDigit prev_sqrt_degree = BLDigit.ZERO;
+        Integer y = sqrt.N.get(0);
+        int i = 0;
+        while ((sqrt.N.get(sqrt.N.size()-1)>=0) && (O.Q != 0)) {
             BLDigit O_next = sub(O, sqrt_degree);
-            out.write((i++ + "\nO: "+O+"\n"+"y: "+y+"\n sqrt_degree: "+sqrt_degree+"\n(O-sqrt_degree) = "+O_next+"\n").getBytes());
             if (O_next.sign == 1) {
                 sqrt.N.remove(y);
                 y = y - 1;
-//                System.out.println("sqrt = sqrt + y");
-
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
-
             } else {
                 O = O_next;
                 if (O.Q == 0) break;
@@ -216,25 +245,14 @@ public class Calculator {
                 y = N - 1 - sqrt.N.get(0);
                 while (sqrt.N.contains(y))
                     y = y - 1;
-//                System.out.println("sqrt = sqrt + y");
                 sqrt = add(sqrt, new BLDigit(0, 1, Arrays.asList(y)));
             }
             square = square(sqrt);
-//            System.out.println("square = square(sqrt) = "+square);
-//            System.out.println("sqrt_degree = square - prev_sqrt_degree");
             sqrt_degree = sub(square, prev_sqrt_degree);
-            out.write("______________________________________________________\n".getBytes());
-            out.write(("\n" + withoutFractPart(sqrt).toString()).getBytes());
-            out.write("\n______________________________________________________\n\n".getBytes());
-//            if ((sqrt.Q>=0)&&(sqrt.N.get(i)<0)) ++i;
-
         }
-
-        out.write(("\n" + withoutFractPart(sqrt).toString()).getBytes());
-
-        out.close();
         return withoutFractPart(sqrt);
     }
+
 
     public static BLDigit square(BLDigit bl1) {
         BLDigit result = BLDigit.ZERO;
