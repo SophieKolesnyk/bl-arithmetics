@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class Converter {
 
-    public static long precision = 100;
+    public static long precision = 60;
 
     public static BLDigit toBLDigit(String i_digit){
         if (i_digit.length() > 10)
@@ -45,14 +45,9 @@ public class Converter {
         BigDecimal fract_part = new BigDecimal("0.0");
         BigDecimal base = new BigDecimal("2.0");
 
-//        for (int i = 0; i < i_bl.Q; ) {
-//            BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(500));
-//            result = result.add(pow);
-//            ++i;
-//        }
         int i = 0;
         while ((i<i_bl.Q)&&(i_bl.N.get(i)>=0)) {
-            BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(500));
+            BigDecimal pow = BigDecimalMath.pow(base, i_bl.N.get(i), new MathContext(0,RoundingMode.HALF_UP));
             int_part = int_part.add(pow);
             ++i;
         }

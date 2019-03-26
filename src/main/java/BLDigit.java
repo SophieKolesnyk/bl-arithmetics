@@ -88,9 +88,10 @@ public class BLDigit {
         result.append("." + this.Q);
 
         if (this.N.size() != 0) {
-            for (int i = 0; i < this.Q; ++i)
+            for (int i = 0; i < this.N.size(); ++i)
                 result.append("." + this.N.get(i));
         } else result.append(".");
+
 
         return result.toString();
     }
